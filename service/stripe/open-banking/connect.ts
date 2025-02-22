@@ -1,9 +1,6 @@
 import { stripe } from "@/utils/stripe/server";
 
-async function createStripeConnection(
-  customerId: string,
-  
-) {
+async function createStripeConnection(customerId: string) {
   try {
     // Step 1: Create a Financial Connections session for the customer.
     const session = await stripe.financialConnections.sessions.create({
@@ -11,9 +8,9 @@ async function createStripeConnection(
         type: "customer",
         customer: customerId, // Use the provided customer ID
       },
-      permissions: ["balances", "transactions"], 
+      permissions: ["balances", "transactions"],
       filters: {
-        countries: ["US"], 
+        countries: ["US"],
       },
       // After linking, Stripe will redirect the user to this URL.
       return_url: "http://localhost:3000/onboarding/sign-up",
