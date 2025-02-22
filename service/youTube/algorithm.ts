@@ -1,9 +1,9 @@
-import { fetchChannelContentDetails } from "./analytics";
+// import { fetchChannelContentDetails } from "./analytics";
 
-fetchChannelContentDetails(username, YoutubeKey).then((data) => {
-    console.log(data);
-}
-);
+// fetchChannelContentDetails(username, YoutubeKey).then((data) => {
+//     console.log(data);
+// }
+// );
 
 // Interface representing the YouTube channel metrics.
 interface ChannelMetrics {
@@ -52,7 +52,8 @@ interface ChannelMetrics {
    * @returns The normalized value between 0 and 1.
    */
   function normalizeLog(value: number, maxValue: number): number {
-    return Math.log(value + 1) / Math.log(maxValue + 1);
+    const nomralized = Math.log(value + 1) / Math.log(maxValue + 1);
+    return Math.min(nomralized, 1); // Cap the value at 1
   }
   
   /**
