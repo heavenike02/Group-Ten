@@ -1,6 +1,3 @@
-let YoutubeKey = "AIzaSyBrbAlL69n1apFfQxxlYYGZ0NPislLzFyc";
-let channelId = "UC-lHJZR3Gqxm24_Vd_AJ5Yw";
-
 // Function to fetch channel content details using the YouTube Data API
 async function fetchChannelContentDetails(channelId: string, apiKey: string)/*: Promise<ChannelResponse> */{
     // return data object
@@ -24,12 +21,12 @@ async function fetchChannelContentDetails(channelId: string, apiKey: string)/*: 
         throw error;
     }
 
-    // get ids of the last 5 videos
+    // get ids of the last 50 videos
 
     // create a videos array to store video ids
     let videos: string[] = [];
 
-    const fivelastvideosurl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&order=date&maxResults=5&key=${apiKey}`;
+    const fivelastvideosurl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&order=date&maxResults=50&key=${apiKey}`;
     try {
         const response = await fetch(fivelastvideosurl);
         if (!response.ok) {
@@ -50,7 +47,11 @@ async function fetchChannelContentDetails(channelId: string, apiKey: string)/*: 
         throw error;
     }
 
-    // get statistics of the last 5 videos
+    // store total views, likes and comments of the last 50 videos
+    let totalViews = 0;
+    let totalLikes = 0;
+    let totalComments = 0;
+    // store statistics of the last 5 videos
     let videoData: Record<string, any> = {};
     for (let i = 0; i < videos.length; i++) {
         let videoIdString = videos[i];
@@ -63,20 +64,33 @@ async function fetchChannelContentDetails(channelId: string, apiKey: string)/*: 
             const data = await response.json();
             //console.log(data["items"][0]["statistics"]);
 
-            // add the data of the ith video to the videodata object
-            videoData[i] = data["items"][0]["statistics"];
-            videoData[i]["videoId"] = videoIdString;  
+            // calculate total views, likes and comments of the last 50 videos
+            totalViews += parseInt(data["items"][0]["statistics"]["viewCount"]);
+            totalLikes += parseInt(data["items"][0]["statistics"]["likeCount"]);
+            totalComments += parseInt(data["items"][0]["statistics"]["commentCount"]);
+
+            // add the data of the last 5 videos to the videodata object
+            if(i<5)
+            {
+                videoData[i] = data["items"][0]["statistics"];
+                videoData[i]["videoId"] = videoIdString;  
+            }
         }
         catch (error) 
         {
-        console.error("Error fetching video statistics:", error);
-        throw error;
+            console.error("Error fetching video statistics:", error);
+            throw error;
         }
     }
+    // get average views, likes and comments of the last 50 videos
+    let averageViews = totalViews/50;
+    let averageLikes = totalLikes/50;
+    let averageComments = totalComments/50;
+    returndata["last50videoData"] = {"totalViews":totalViews, "totalLikes":totalLikes,"totalComments": totalComments, "averageViewsPerVideo":averageViews, "averageLikesPerVideo":averageLikes, "averageCommentsPerVideo":averageComments}; 
     // save videoData to returndata
     returndata["videoData"] = videoData; 
 
-    return returndata;
+    console.log(returndata);
 }
 
-console.log(fetchChannelContentDetails(channelId, YoutubeKey));
+fetchChannelContentDetails(channelId, YoutubeKey);
