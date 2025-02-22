@@ -40,6 +40,7 @@ export default async function Signup(props: {
             required
           />
           <SubmitButton formAction={signUpAction} pendingText="Signing up...">
+          
             Sign up
           </SubmitButton>
           <FormMessage message={searchParams} />

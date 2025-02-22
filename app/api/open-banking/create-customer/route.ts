@@ -1,7 +1,7 @@
 import { createStripeCustomer as createStripeCustomerService } from "@/service/stripe/open-banking/create-customer";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-export default async function handleCreateStripeCustomer(
+export  async function handleCreateStripeCustomer(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
