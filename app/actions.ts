@@ -4,6 +4,7 @@ import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { stripe } from "@/utils/stripe/server";
 
 
 export const signUpAction = async (formData: FormData) => {
@@ -35,6 +36,20 @@ export const signUpAction = async (formData: FormData) => {
     console.error(error.code + " " + error.message);
     return encodedRedirect("error", "/sign-up", error.message);
   } else {
+
+
+    // create a stripe customer
+    const customer = await stripe.customers.create({
+      email,
+    });
+
+    const { data: user } = await supabase.auth.getUser();
+
+    await supabase
+      .from("profiles")
+      .update({ stripe_customer_id: customer.id })
+      .eq("id", user.user?.id);
+
     return encodedRedirect(
       "success",
       "/dashboard",
