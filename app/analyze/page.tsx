@@ -47,7 +47,7 @@ const AnalyzePage = () => {
               </h2>
               <p>
                 <strong>Accumulated Balance:</strong> $
-                {account.accumulatedBalance / 100}
+                {account.accumulatedBalance}
               </p>
               <p>
                 <strong>Institution Name:</strong> {account.institutionName}

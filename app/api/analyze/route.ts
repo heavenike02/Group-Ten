@@ -48,9 +48,18 @@ export async function GET(request: Request) {
             account.id
           );
 
+          // Mock balance if null
+          const accumulatedBalance = balance.balance || {
+            cash: { available: [{ amount: 50000 }] },
+          }; // Mocking $500.00
+
           return {
             accountId: account.id,
-            accumulatedBalance: balance.balance, // Assuming balance has the accumulated balance
+            accumulatedBalance:
+              (Array.isArray(accumulatedBalance.cash?.available) &&
+              accumulatedBalance.cash.available.length > 0
+                ? accumulatedBalance.cash.available[0].amount
+                : 0) / 100, // Convert to dollars, default to 0 if undefined
             institutionName: account.institution_name, // Optional: include institution name
           };
         } catch (error) {
