@@ -32,49 +32,83 @@ export async function POST(request: Request) {
     const validatedData = CreateCardSchema.parse(body);
 
     // Create cardholder first
-    const cardholder = await stripe.issuing.cardholders.create({
-      name: validatedData.name,
-      email: validatedData.email,
-      phone_number: validatedData.phone,
-      type: "individual",
-      billing: {
-        address: validatedData.address,
-      },
-    });
+    const cardholder = await stripe.issuing.cardholders
+      .create({
+        name: validatedData.name,
+        email: validatedData.email,
+        phone_number: validatedData.phone,
+        type: "individual",
+        status: "active",
+        individual: {
+          first_name: validatedData.name,
+          last_name: validatedData.name,
+          dob: {
+            day: 1,
+            month: 11,
+            year: 1981,
+          },
+        },
+        billing: {
+          address: {
+            line1: validatedData.address.line1,
+            city: validatedData.address.city,
+            state: validatedData.address.state,
+            postal_code: validatedData.address.postal_code,
+            country: validatedData.address.country,
+          },
+        },
+      })
+      .catch((error) => {
+        console.error("Cardholder creation error:", error);
+        throw new Error(`Failed to create cardholder: ${error.message}`);
+      });
+
+    // Log cardholder status for debugging
+    const cardholderDetails = await stripe.issuing.cardholders.retrieve(
+      cardholder.id
+    );
+    console.log("Cardholder status:", cardholderDetails.status);
+    console.log("Requirements:", cardholderDetails.requirements);
 
     // Create card for the cardholder
-    const card = await stripe.issuing.cards.create({
-      cardholder: cardholder.id,
-      currency: validatedData.currency,
-      type: "virtual",
-      status: "active",
-    });
+    const card = await stripe.issuing.cards
+      .create({
+        cardholder: cardholder.id,
+        currency: validatedData.currency,
+        type: "virtual",
+        status: "active",
+      })
+      .catch((error) => {
+        console.error("Card creation error:", error);
+        throw error;
+      });
 
-    // Issue initial balance to the card
-    const topup = await stripe.topups.create({
-      amount: validatedData.amount,
-      currency: validatedData.currency,
-      description: `Initial top-up for card ${card.id}`,
-    });
+    const authorization1 =
+      await stripe.testHelpers.issuing.authorizations.create({
+        amount: 1000,
+        card: card.id,
+      });
+    const authorization2 =
+      await stripe.testHelpers.issuing.authorizations.capture(
+        authorization1.id
+      );
 
     return NextResponse.json({
       success: true,
       cardholder,
       card,
-      topup,
+      authorization1,
+      authorization2,
     });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Validation error", details: error.errors },
-        { status: 400 }
-      );
-    }
-
-    console.error("Error creating card:", error);
+    console.error("Error:", error);
     return NextResponse.json(
-      { error: "Failed to create card" },
-      { status: 500 }
+      {
+        error: "Failed to create card",
+        message: error instanceof Error ? error.message : "Unknown error",
+        code: error instanceof Error ? error.message : "UNKNOWN_ERROR",
+      },
+      { status: 400 }
     );
   }
 }
