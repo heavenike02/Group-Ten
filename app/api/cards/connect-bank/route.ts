@@ -1,26 +1,26 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import {} from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { stripe } from "@/utils/stripe/server";
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 
 export async function POST(request: Request) {
   try {
     // Get authenticated user
-    const supabase = createRouteHandlerClient({ cookies });
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const supabase = await createClient();
 
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data?.user) {
+      redirect("/login");
     }
 
+    console.log(data.user);
     // Get user's Stripe customer ID
     const { data: profile } = await supabase
       .from("profiles")
       .select("stripe_customer_id")
-      .eq("id", user.id)
+      .eq("id", data.user.id)
       .single();
 
     if (!profile) {
@@ -37,6 +37,7 @@ export async function POST(request: Request) {
     });
 
     console.log("Session:", session);
+    console.log(session.client_secret);
 
     return NextResponse.json({
       clientSecret: session.client_secret,
