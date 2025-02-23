@@ -82,12 +82,12 @@ export const proposal_analyser = async (channel: string) => {
       throw new Error("Response content is empty or undefined");
     }
 
-    console.log("Proposal Analysis Report DYUVBHQ YKHJ: ", content);
+    // console.log("Proposal Analysis Report DYUVBHQ YKHJ: ", content);
 
     return content;
 
   } catch (error : any) {
-    console.error("Error processing final score:", error.message);
+    console.error("Error processing proposal score:", error.message);
     return null;
   }
 };

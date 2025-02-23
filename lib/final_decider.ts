@@ -1,7 +1,6 @@
 import { create_analysisReport } from "./collected_reports";
 import OpenAI from "openai";
 import "dotenv/config";
-import { Console } from "console";
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 if (!OPENAI_API_KEY) {
@@ -36,9 +35,9 @@ Where:
 - If the **credit risk score** is high, limit or deny the loan based on financial stability.
 - If the **business proposal score** is missing (null), assume worst-case unless other indicators are strong.
 - All factors should be weighed holistically, with a conservative approach to risk.
-- The loan approved should be the maximum amount that is safe and viable for credit. it should be smaller than or eual to the loan requested.
+- The loan approved should be the maximum amount that is safe and viable for credit. It should be smaller than or equal to the loan requested.
 - If the loan is denied, the approved loan amount should be 0.
-- For any risk that is detcted, penalise the loan amount accordingly, reducing the loan amount to balance the risk taken.
+- For any risk that is detected, penalize the loan amount accordingly, reducing the loan amount to balance the risk taken.
 
 **Important:**
 - Return only the two integers inside square brackets [ ].
@@ -53,22 +52,14 @@ export const create_final_decision = async (
   banking_data: any,
   loan_asked: number
 ) => {
-  console.log("Step 1");
-
   try {
-    const summary_report = await create_analysisReport(
-      channel,
-      banking_data,
-      loan_asked
-    );
+    const summary_report = await create_analysisReport(channel, banking_data, loan_asked);
 
     const formatted_summary_report = JSON.stringify(summary_report);
-
-
-    console.log("Step 10");
+    console.log("formatted_summary_report: ", formatted_summary_report);
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4-turbo", // or "gpt-4o"
+      model: "gpt-4-turbo",
       messages: [
         {
           role: "user",

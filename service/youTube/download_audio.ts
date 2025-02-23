@@ -12,8 +12,6 @@ export function download_audio(
     return false;
   }
 
-  console.log("Checking if downloads folder exists..." + downloads_folder);
-
   if (!fs.existsSync(downloads_folder)) {
     fs.mkdirSync(downloads_folder, { recursive: true });
   }
@@ -27,13 +25,14 @@ export function download_audio(
     return false;
   }
 
-  console.log(`📥 Downloading audio from: ${channelUrl}`);
-  console.log(`📂 Saving to: ${downloads_folder}`);
-  const command = `yt-dlp --extract-audio --audio-format wav -f bestaudio --playlist-items 1-2 -N 8 --match-filter "duration < 600" -o "${outputPath}" "${channelUrl}"`;
+  // console.log(`📥 Downloading audio from: ${channelUrl}`);
+  // console.log(`📂 Saving to: ${downloads_folder}`);
+  const command = `yt-dlp --extract-audio --audio-format wav -f bestaudio --playlist-items 1-5 -N 8 --match-filter "duration < 600" -o "${outputPath}" "${channelUrl}"`;
+  // const command = `yt-dlp -f bestaudio --extract-audio --audio-format wav --playlist-items 1-2 -N 8 --download-sections "*0-500" -o "${outputPath}" "${channelUrl}"`;
 
   try {
     execSync(command, { stdio: "inherit" });
-    console.log("✅ Download complete!");
+    // console.log("✅ Download complete!");
     return true;
   } catch (error) {
     if (error instanceof Error) {

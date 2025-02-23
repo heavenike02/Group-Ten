@@ -23,11 +23,11 @@ export const process_channel = async (channel: string) : Promise<string | null> 
     const wavFiles = files.filter((file) => file.endsWith(".wav"));
 
     if (wavFiles.length === 0) {
-      console.log("No wav files found.");
+      // console.log("No wav files found.");
 
       try {
         await fs.remove(DIRECTORY);
-        console.log(`Deleted directory: ${DIRECTORY}`);
+        // console.log(`Deleted directory: ${DIRECTORY}`);
       } catch (error: any) {
         console.error("Error deleting directory:", error.message);
       }
@@ -40,13 +40,13 @@ export const process_channel = async (channel: string) : Promise<string | null> 
     for (const file of wavFiles) {
       const filePath = path.join(DIRECTORY, file);
 
-      console.log(`Analysing: ${file}...`);
+      // console.log(`Analysing: ${file}...`);
 
       output.push(
         analyse_file(filePath).then((analysis) => {
           if (analysis) {
-            // console.log(analysis);
-            console.log(`Saved analysis`);
+            // // console.log(analysis);
+            // console.log(`Saved analysis`);
             full_output[file.slice(0, -4)] = analysis;
           }
         })
@@ -58,12 +58,12 @@ export const process_channel = async (channel: string) : Promise<string | null> 
     console.error("Error processing directory:", error.message);
   }
 
-  console.log("Analysis complete.");
-  // console.log(full_output);
+  // console.log("Analysis complete.");
+  // // console.log(full_output);
 
   try {
     await fs.remove(DIRECTORY);
-    console.log(`Deleted directory: ${DIRECTORY}`);
+    // console.log(`Deleted directory: ${DIRECTORY}`);
   } catch (error: any) {
     console.error("Error deleting directory:", error.message);
   }

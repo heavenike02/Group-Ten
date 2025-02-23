@@ -76,7 +76,7 @@ export const final_score_brand = async (channel: string) => {
 
     return [score, analysis];
   } catch (error : any) {
-    console.error("Error processing final score:", error.message);
+    console.error("Error processing brand score:", error.message);
     return null;
   }
 };

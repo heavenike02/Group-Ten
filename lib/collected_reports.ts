@@ -1,45 +1,46 @@
-import { evaluateCreditRisk /*, banking_data*/ } from "../lib/creditScoring";
+import { evaluateCreditRisk, BankingData } from "../lib/creditScoring";
 import { final_score_brand } from "../service/youTube/final_score";
 import { proposal_analyser } from "../service/business_plan/proposal_analyser";
+import { fetchChannelContentDetails } from "../service/youTube/analytics";
+import "dotenv/config";
 
-const yt_name = "neetcode";
 
 export const create_analysisReport = async (
   channel: string,
-  banking_data: any,
+  banking_data: BankingData,
   loan_asked: number
 ) => {
-  const brand_safety = await final_score_brand(channel); // 0 - 10
+  const brand_safety = await final_score_brand(channel);
   console.log("Final Score brand: ", brand_safety);
-  // const json_credit_score = await evaluateCreditRisk(banking_data); // 0 - 10
-  console.log("Step 2");
-  // console.log(json_credit_score);
 
-  const report_score = await proposal_analyser(channel); // 0 - 10
-  console.log("Step 3");
-  console.log(report_score);
+  const json_credit_score = evaluateCreditRisk(banking_data);
+  console.log("Final Credit Score: ", json_credit_score);
 
-  const int_engagement_score = 5; // 0 - 10 (0 being the best, 10 being the worst)
-  console.log("Step 4");
-  console.log(int_engagement_score);
+  const report_score = await proposal_analyser(channel);
+  console.log("Final Report Score: ", report_score);
 
-  // Creating a JSON object to summarize the data
+  if (!process.env.YT_API_KEY) {
+    throw new Error("YouTube API key is not defined");
+  }
+
+  const int_engagement_score = await fetchChannelContentDetails(channel, process.env.YT_API_KEY);
+  console.log("Final Engagement Score: ", int_engagement_score);
+
   const analysisReport = {
     channel_information: {
       name: channel,
-      description:
-        "YouTube channel being analyzed for brand safety and engagement.",
+      description: "YouTube channel being analyzed for brand safety and engagement.",
     },
     financial_analysis: {
       loan_requested: loan_asked,
       description:
-        "Loan requested amount: It is the maximum amount of the loan that can be approved for the channel is the loan is approved.",
+        "Loan requested amount: It is the maximum amount of the loan that can be approved for the channel if the loan is approved.",
     },
     scores: {
       brand_safety_score: {
-        value: brand_safety?.toString(),
+        value: brand_safety ? brand_safety.toString() : "null",
         description:
-          "A score assessing the brand safety of the YouTube channel along with a report on a few of its latest videos.The first integer character is the overall score, Lower is better (0 = best, 10 = worst).",
+          "A score assessing the brand safety of the YouTube channel. Lower is better (0 = best, 10 = worst).",
       },
       engagement_score: {
         value: int_engagement_score,
@@ -47,9 +48,9 @@ export const create_analysisReport = async (
           "An internal metric evaluating the engagement of the YouTube channel. Lower is better (0 = best, 10 = worst).",
       },
       credit_risk_score: {
-        value: 5,
+        value: json_credit_score,
         description:
-          "Evaluated credit risk score based on provided banking data. contains a credit risk score from 0 to 10. Lower is better (0 = best, 10 = worst)",
+          "Evaluated credit risk score based on provided banking data. Lower is better (0 = best, 10 = worst).",
       },
       business_proposal_score: {
         value: report_score,
@@ -58,10 +59,6 @@ export const create_analysisReport = async (
       },
     },
   };
-
-  console.log("Step 5");
-
-  console.log(analysisReport);
 
   return analysisReport;
 };

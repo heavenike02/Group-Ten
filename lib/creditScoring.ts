@@ -1,6 +1,3 @@
-// creditScoring.ts
-
-// Define interfaces for the input data
 export interface Transaction {
   date: string;
   rdate: string;
@@ -31,7 +28,6 @@ export interface BankingData {
   connections: Connection[];
 }
 
-// Define an interface for the evaluation result
 export interface CreditEvaluationResult {
   creditScore: number;
   metrics: {
@@ -46,33 +42,16 @@ export interface CreditEvaluationResult {
   };
 }
 
-// A helper function for normalization
 function normalize(value: number, min: number, max: number): number {
   if (max === min) return 0;
   return Math.max(0, Math.min(1, (value - min) / (max - min)));
 }
 
-/**
- * Evaluates a customer's credit risk based on transaction data.
- * @param data - The banking data in the BUDGET_INSIGHT_V2_0 format.
- * @returns A CreditEvaluationResult object with computed metrics.
- */
 export function evaluateCreditRisk(data: BankingData): CreditEvaluationResult {
-  /*if (
-    !data.connections ||
-    data.connections.length === 0 ||
-    !data.connections[0].accounts ||
-    data.connections[0].accounts.length === 0
-  ) {
-    throw new Error("Invalid banking data: No account information available.");
-  }*/
-
-  // Assume we're working with the first connection and first account
   const account = data.connections[0].accounts[0];
   const transactions = account.transactions || [];
   const currentBalance = account.balance;
 
-  // Define evaluation period: last 90 days
   const evaluationPeriodDays = 90;
   const evaluationPeriodStart = new Date(
     Date.now() - evaluationPeriodDays * 24 * 60 * 60 * 1000
@@ -83,7 +62,6 @@ export function evaluateCreditRisk(data: BankingData): CreditEvaluationResult {
   const salaryTransactions: number[] = [];
   let overdraftCount = 0;
 
-  // Process transactions in the evaluation period
   transactions.forEach((txn) => {
     const txnDate = new Date(txn.date);
     if (txnDate < evaluationPeriodStart) return;
@@ -104,26 +82,21 @@ export function evaluateCreditRisk(data: BankingData): CreditEvaluationResult {
     }
   });
 
-  // Compute core metrics
   const netIncome = totalIncome - totalExpenditure;
   const expenditureRatio = totalIncome > 0 ? totalExpenditure / totalIncome : 1;
   const averageSalary =
     salaryTransactions.length > 0
-      ? salaryTransactions.reduce((sum, s) => sum + s, 0) /
-        salaryTransactions.length
+      ? salaryTransactions.reduce((sum, s) => sum + s, 0) / salaryTransactions.length
       : 0;
 
-  // Salary frequency calculation (number of salary deposits per month)
   const months = evaluationPeriodDays / 30;
   const salaryFrequency = salaryTransactions.length / months;
 
-  // --- Normalization --- //
   const normalizedNetIncome = normalize(netIncome, -5000, 5000);
   const normalizedSalaryFrequency = normalize(salaryFrequency, 0, 2);
   const normalizedBalance = currentBalance >= 0 ? 1 : 0;
   const normalizedOverdraftPenalty = 1 - Math.min(overdraftCount / 3, 1);
 
-  // --- Composite Credit Score --- //
   const weight_netIncome = 0.4;
   const weight_salaryStability = 0.3;
   const weight_balance = 0.2;
@@ -135,7 +108,6 @@ export function evaluateCreditRisk(data: BankingData): CreditEvaluationResult {
     weight_balance * normalizedBalance +
     weight_overdraft * normalizedOverdraftPenalty;
 
-  // --- Credit Score Transformation (0-10 scale) --- //
   const creditScore = Math.round((1 - compositeScore) * 10);
 
   return {
@@ -153,7 +125,7 @@ export function evaluateCreditRisk(data: BankingData): CreditEvaluationResult {
   };
 }
 
-export const banking_data = {
+export const banking_data : BankingData = {
   format: "BUDGET_INSIGHT_V2_0",
   connections: [
     {
