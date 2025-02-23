@@ -1,11 +1,30 @@
 "use client";
 
+import type React from "react";
+
 import { useState } from "react";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-// import { TestBankConnect } from "@/service/stripe/open-banking/open-banking-button"; // if needed
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CheckCircle2, AlertCircle } from "lucide-react";
 
+// Schema remains the same
 const CreateCardSchema = z.object({
   youtubeUrl: z.string().url("Invalid YouTube URL").optional(),
   name: z.string().min(1, "Name is required"),
@@ -25,11 +44,11 @@ const CreateCardSchema = z.object({
   amount: z
     .number()
     .int("Amount must be an integer")
-    .min(1, "Amount must be greater than 0")
-    .describe("Amount in cents"),
+    .min(1, "Amount must be greater than 0"),
 });
 
 export function ApplyForm() {
+  // State remains the same
   const [formData, setFormData] = useState({
     youtubeUrl: "",
     name: "",
@@ -52,7 +71,7 @@ export function ApplyForm() {
   const [error, setError] = useState("");
   const [cardData, setCardData] = useState(null);
 
-  // General change handler for non-address fields and select elements
+  // Handlers remain the same
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -63,7 +82,6 @@ export function ApplyForm() {
     }));
   };
 
-  // Change handler for address fields
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -75,7 +93,6 @@ export function ApplyForm() {
     }));
   };
 
-  // Separate handler for the amount to convert the value to a number
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const amount = value ? Number(value) : 0;
@@ -92,38 +109,21 @@ export function ApplyForm() {
     setError("");
 
     try {
-      // Validate using Zod
       CreateCardSchema.parse(formData);
-    } catch (validationError: any) {
-      setError(validationError.errors[0].message || "Validation error");
-      setLoading(false);
-      return;
-    }
 
-    try {
-      // Log the form data for debugging purposes
-      console.log("Form Data:", formData);
-
-      // Send the form data to the apply endpoint
       const response = await fetch("/api/cards/apply", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
       const data = await response.json();
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(data.message || "Failed to apply for credit");
-      }
 
-      // Send only the required fields to create the card
       const cardResponse = await fetch("/api/cards/create", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
@@ -135,11 +135,10 @@ export function ApplyForm() {
       });
 
       const cardDataJson = await cardResponse.json();
-      if (!cardResponse.ok) {
+      if (!cardResponse.ok)
         throw new Error(cardDataJson.message || "Failed to create card");
-      }
 
-      setCardData(cardDataJson.card); // Assuming the API returns the card data under "card"
+      setCardData(cardDataJson.card);
       setMessage("Card created successfully!");
     } catch (err: any) {
       setError(err.message);
@@ -149,180 +148,228 @@ export function ApplyForm() {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit} className="grid gap-4">
-        {/* YouTube URL */}
-        <div className="grid gap-2">
-          <label htmlFor="youtubeUrl">YouTube URL</label>
-          <Input
-            id="youtubeUrl"
-            name="youtubeUrl"
-            type="url"
-            value={formData.youtubeUrl}
-            onChange={handleChange}
-            placeholder="https://www.youtube.com/channel/..."
-          />
-        </div>
-        {/* Name */}
-        <div className="grid gap-2">
-          <label htmlFor="name">Name</label>
-          <Input
-            id="name"
-            name="name"
-            type="text"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Your Name"
-            required
-          />
-        </div>
-        {/* Email */}
-        <div className="grid gap-2">
-          <label htmlFor="email">Email</label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="you@example.com"
-            required
-          />
-        </div>
-        {/* Phone */}
-        <div className="grid gap-2">
-          <label htmlFor="phone">Phone</label>
-          <Input
-            id="phone"
-            name="phone"
-            type="tel"
-            value={formData.phone}
-            onChange={handleChange}
-            placeholder="+1234567890"
-            required
-          />
-        </div>
-        {/* Address Fields */}
-        <fieldset className="border p-4">
-          <legend>Address</legend>
-          <div className="grid gap-2">
-            <label htmlFor="line1">Address Line 1</label>
-            <Input
-              id="line1"
-              name="line1"
-              type="text"
-              value={formData.address.line1}
-              onChange={handleAddressChange}
-              placeholder="Address Line 1"
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <label htmlFor="line2">Address Line 2</label>
-            <Input
-              id="line2"
-              name="line2"
-              type="text"
-              value={formData.address.line2}
-              onChange={handleAddressChange}
-              placeholder="Address Line 2"
-            />
-          </div>
-          <div className="grid gap-2">
-            <label htmlFor="city">City</label>
-            <Input
-              id="city"
-              name="city"
-              type="text"
-              value={formData.address.city}
-              onChange={handleAddressChange}
-              placeholder="City"
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <label htmlFor="state">State</label>
-            <Input
-              id="state"
-              name="state"
-              type="text"
-              value={formData.address.state}
-              onChange={handleAddressChange}
-              placeholder="State"
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <label htmlFor="postal_code">Postal Code</label>
-            <Input
-              id="postal_code"
-              name="postal_code"
-              type="text"
-              value={formData.address.postal_code}
-              onChange={handleAddressChange}
-              placeholder="Postal Code"
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <label htmlFor="country">Country (2-letter code)</label>
-            <Input
-              id="country"
-              name="country"
-              type="text"
-              value={formData.address.country}
-              onChange={handleAddressChange}
-              placeholder="Country"
-              maxLength={2}
-              required
-            />
-          </div>
-        </fieldset>
-        {/* Currency */}
-        <div className="grid gap-2">
-          <label htmlFor="currency">Currency</label>
-          <select
-            id="currency"
-            name="currency"
-            value={formData.currency}
-            onChange={handleChange}
-            required
-          >
-            <option value="usd">USD</option>
-            <option value="eur">EUR</option>
-          </select>
-        </div>
-        {/* Amount */}
-        <div className="grid gap-2">
-          <label htmlFor="amount">Amount (in cents)</label>
-          <Input
-            id="amount"
-            name="amount"
-            type="number"
-            value={formData.amount}
-            onChange={handleAmountChange}
-            placeholder="Amount in cents"
-            required
-          />
-        </div>
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Applying..." : "Apply for Credit"}
-        </Button>
-        {message && <div className="mt-4 text-green-600">{message}</div>}
-        {error && <div className="mt-4 text-red-600">{error}</div>}
-      </form>
+    <div className="container max-w-2xl mx-auto py-10">
+      <Card>
+        <CardHeader>
+          <CardTitle>Apply for Credit</CardTitle>
+          <CardDescription>
+            Fill out the form below to apply for a credit line. We'll review
+            your application and get back to you shortly.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Basic Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Basic Information</h3>
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="youtubeUrl">YouTube URL</Label>
+                  <Input
+                    id="youtubeUrl"
+                    name="youtubeUrl"
+                    type="url"
+                    value={formData.youtubeUrl}
+                    onChange={handleChange}
+                    placeholder="https://www.youtube.com/channel/..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="John Doe"
+                    required
+                  />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="you@example.com"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="+1234567890"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
 
-      {cardData && (
-        <div className="mt-4 p-4 border rounded bg-gray-100">
-          <h2 className="text-lg font-semibold">Card Details</h2>
-          <p>
-            <strong>Card ID:</strong> {cardData.id}
-          </p>
-          <p>
-            <strong>Balance:</strong> ${cardData?.balance / 100}
-          </p>
-        </div>
-      )}
+            {/* Address Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Address Information</h3>
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="line1">Address Line 1</Label>
+                  <Input
+                    id="line1"
+                    name="line1"
+                    value={formData.address.line1}
+                    onChange={handleAddressChange}
+                    placeholder="Street address"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="line2">Address Line 2</Label>
+                  <Input
+                    id="line2"
+                    name="line2"
+                    value={formData.address.line2}
+                    onChange={handleAddressChange}
+                    placeholder="Apartment, suite, etc."
+                  />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="city">City</Label>
+                    <Input
+                      id="city"
+                      name="city"
+                      value={formData.address.city}
+                      onChange={handleAddressChange}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="state">State</Label>
+                    <Input
+                      id="state"
+                      name="state"
+                      value={formData.address.state}
+                      onChange={handleAddressChange}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="postal_code">Postal Code</Label>
+                    <Input
+                      id="postal_code"
+                      name="postal_code"
+                      value={formData.address.postal_code}
+                      onChange={handleAddressChange}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="country">Country Code</Label>
+                    <Input
+                      id="country"
+                      name="country"
+                      value={formData.address.country}
+                      onChange={handleAddressChange}
+                      placeholder="US"
+                      maxLength={2}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Credit Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Credit Information</h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="currency">Currency</Label>
+                  <Select
+                    name="currency"
+                    value={formData.currency}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, currency: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select currency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="usd">USD</SelectItem>
+                      <SelectItem value="eur">EUR</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="amount">Amount (in cents)</Label>
+                  <Input
+                    id="amount"
+                    name="amount"
+                    type="number"
+                    value={formData.amount}
+                    onChange={handleAmountChange}
+                    placeholder="5000"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Messages */}
+            {message && (
+              <Alert className="bg-green-50 text-green-900 border-green-200">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <AlertDescription>{message}</AlertDescription>
+              </Alert>
+            )}
+
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* Submit Button */}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Processing..." : "Submit Application"}
+            </Button>
+          </form>
+
+          {/* Card Data Display */}
+          {cardData && (
+            <Card className="mt-8">
+              <CardHeader>
+                <CardTitle>Card Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Card ID:</span>
+                    <span className="font-medium">{cardData.id}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Balance:</span>
+                    <span className="font-medium">
+                      ${(cardData?.balance / 100).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

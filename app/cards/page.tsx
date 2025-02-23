@@ -11,7 +11,7 @@ const CardsPage = () => {
       try {
         const response = await fetch("/api/cards");
         if (!response.ok) {
-          throw new Error("Failed to fetch cards");
+          throw new Error("Go and apply for a card!");
         }
         const data = await response.json();
         setCards(data.cards);
