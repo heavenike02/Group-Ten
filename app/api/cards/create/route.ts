@@ -109,7 +109,6 @@ export async function POST(request: Request) {
     // console.log("Cardholder status:", cardholderDetails.status);
     // console.log("Requirements:", cardholderDetails.requirements);
 
-    
     // Create card for the cardholder
     const card = await stripe.issuing.cards
       .create({
@@ -117,6 +116,14 @@ export async function POST(request: Request) {
         currency: validatedData.currency,
         type: "virtual",
         status: "active",
+        spending_controls: {
+          spending_limits: [
+            {
+              amount: 1000000, // THIS IS CUSTOMISABLE AND DEPENDS ON THE VALUE RETURNED BY OUR CREDIT SCORE CHECKS
+              interval: "all_time",
+            },
+          ],
+        },
       })
       .catch((error) => {
         console.error("Card creation error:", error);
