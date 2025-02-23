@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/utils/stripe/server";
 import { z } from "zod";
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 
 const CreateCardSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -31,6 +33,30 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validatedData = CreateCardSchema.parse(body);
 
+    const supabase = await createClient();
+
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data?.user) {
+      redirect("/login");
+    }
+
+    console.log(data.user);
+    // Get user's Stripe customer ID
+
+    // Get user's Stripe customer ID
+    const { data: userProfile, error: profileError } = await supabase
+      .from("profiles")
+      .select("stripe_customer_id")
+      .eq("id", data.user.id)
+      .single();
+
+    if (profileError || !userProfile) {
+      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+    }
+
+    // Ensure required capabilities are enabled
+    //await ensureCapabilities();
+
     // Create cardholder first
     const cardholder = await stripe.issuing.cardholders
       .create({
@@ -40,8 +66,8 @@ export async function POST(request: Request) {
         type: "individual",
         status: "active",
         individual: {
-          first_name: validatedData.name,
-          last_name: validatedData.name,
+          first_name: "Jenny",
+          last_name: "Rosen",
           dob: {
             day: 1,
             month: 11,
@@ -50,11 +76,11 @@ export async function POST(request: Request) {
         },
         billing: {
           address: {
-            line1: validatedData.address.line1,
-            city: validatedData.address.city,
-            state: validatedData.address.state,
-            postal_code: validatedData.address.postal_code,
-            country: validatedData.address.country,
+            line1: "123 Main Street",
+            city: "San Francisco",
+            state: "CA",
+            postal_code: "94111",
+            country: "IE",
           },
         },
       })
@@ -63,13 +89,27 @@ export async function POST(request: Request) {
         throw new Error(`Failed to create cardholder: ${error.message}`);
       });
 
-    // Log cardholder status for debugging
-    const cardholderDetails = await stripe.issuing.cardholders.retrieve(
-      cardholder.id
-    );
-    console.log("Cardholder status:", cardholderDetails.status);
-    console.log("Requirements:", cardholderDetails.requirements);
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ cardholder_id: cardholder.id }) // Update the cardholder_id
+      .eq("id", data.user.id); // Use the user ID to find the correct profile
 
+    if (updateError) {
+      console.error("Error updating cardholder ID:", updateError);
+      return NextResponse.json(
+        { error: "Failed to update cardholder ID" },
+        { status: 400 }
+      );
+    }
+
+    // Log cardholder status for debugging
+    // const cardholderDetails = await stripe.issuing.cardholders.retrieve(
+    //   cardholder.id
+    // );
+    // console.log("Cardholder status:", cardholderDetails.status);
+    // console.log("Requirements:", cardholderDetails.requirements);
+
+    
     // Create card for the cardholder
     const card = await stripe.issuing.cards
       .create({

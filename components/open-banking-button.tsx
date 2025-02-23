@@ -13,7 +13,7 @@ export function TestBankConnect() {
     setLoading(true);
     try {
       // Get client secret from your API
-      const response = await fetch("/api/cards/connect-bank", {
+      const response = await fetch("/api/connect-bank", {
         method: "POST",
       });
       const { clientSecret } = await response.json();
