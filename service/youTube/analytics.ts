@@ -1,7 +1,7 @@
 // add interface for cleaner code
 
 // Function to fetch channel content details using the YouTube Data API
-export async function fetchChannelContentDetails(username: string, apiKey: string){
+async function fetchChannelContentDetails(username: string, apiKey: string){
     // return data object
     let returndata: Record<string, any> = {};
     // get channel details
@@ -119,6 +119,15 @@ export async function fetchChannelContentDetails(username: string, apiKey: strin
         "averageCommentsPerVideo":averageComments,
         "averageVideoEngagement": (averageLikes + averageComments) / averageViews
     }; 
+    returndata["algorithmData"] = {
+        "subscribers": parseInt(returndata["statistics"]["subscriberCount"]),
+        "viewsPerVideo": parseInt(returndata["statistics"]["viewCount"])/parseInt(returndata["statistics"]["videoCount"]),
+        "engagementRatio": (averageLikes + averageComments) / averageViews
+    };
     //console.log(returndata["last50videoData"]);
     return returndata;
 }
+
+fetchChannelContentDetails(username, apiKey).then((data) => {
+    console.log(data);
+})

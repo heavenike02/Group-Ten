@@ -8,14 +8,8 @@
 // Interface representing the YouTube channel metrics.
 interface ChannelMetrics {
     subscribers: number;
-    totalViews: number;
+    viewsPerVideo: number;
     engagementRatio: number;
-    /**
-     * A safety risk score between 0 and 1, where 0 means completely safe
-     * and 1 indicates high risk. The algorithm will use (1 - safetyScore)
-     * so that a lower risk improves the overall score.
-     */
-    safetyScore: number;
   }
   
   /**
@@ -24,7 +18,7 @@ interface ChannelMetrics {
    */
   interface NormalizationFactors {
     maxSubscribers: number;
-    maxTotalViews: number;
+    maxViewsPerVideo: number;
     /**
      * Maximum expected engagement ratio.
      * Engagement ratio is defined as (likes + comments) / totalViews.
@@ -40,7 +34,6 @@ interface ChannelMetrics {
     subscribers: number;
     totalViews: number;
     engagement: number;
-    safety: number;
   }
   
   /**
@@ -53,48 +46,49 @@ interface ChannelMetrics {
    */
   function normalizeLog(value: number, maxValue: number): number {
     const nomralized = Math.log(value + 1) / Math.log(maxValue + 1);
-    return Math.min(nomralized, 1); // Cap the value at 1
+    return Math.min(Math.pow(nomralized,3), 1); // Cap the value at 1
   }
   
-  /**
-   * Calculates the credit eligibility score for a YouTube channel on a scale from 0 to 10.
-   *
-   * @param metrics - The channel metrics.
-   * @param normalization - Normalization factors for subscribers, views, and engagement.
-   * @param weights - Weights to assign to each normalized metric.
-   * @returns The credit eligibility score between 0 and 10.
-   */
+  // Calculates the credit eligibility score for a YouTube channel on a scale from 0 to 10.
   function getCreditScore(
     metrics: ChannelMetrics,
     normalization: NormalizationFactors,
     weights: Weights
   ): number {
+    let modifier = 1;
+    if(metrics.subscribers/normalization.maxSubscribers > 1){
+      modifier *= Math.min(metrics.subscribers/normalization.maxSubscribers,1.2);
+    }
+    if(metrics.viewsPerVideo/normalization.maxViewsPerVideo > 1){
+      modifier *= Math.min(metrics.viewsPerVideo/normalization.maxViewsPerVideo,1.2);
+    }
+    if(metrics.engagementRatio/normalization.maxEngagementRatio > 1){
+      modifier *= Math.min(metrics.engagementRatio/normalization.maxEngagementRatio, 1.2);
+    }
+    modifier *= Math.max(Math.min((metrics.viewsPerVideo*2)/metrics.subscribers,1.2),0.8);
+
     // Normalize subscribers and total views using logarithmic scaling.
     const normSubscribers = normalizeLog(metrics.subscribers, normalization.maxSubscribers);
-    const normTotalViews = normalizeLog(metrics.totalViews, normalization.maxTotalViews);
+    const normViewsPerVideo = normalizeLog(metrics.viewsPerVideo, normalization.maxViewsPerVideo);
   
     // Calculate engagement ratio: (likes + comments) / totalViews (avoid division by zero)
-    const engagementRatio = metrics.totalViews > 0 ? metrics.engagementRatio : 0;
+    //const engagementRatio = metrics.viewsPerVideo > 0 ? metrics.engagementRatio : 0;
     // Normalize the engagement ratio (capped at 1 for extreme values)
-    const normEngagement = Math.min(engagementRatio / normalization.maxEngagementRatio, 1);
-  
-    // Adjust safety: if safetyScore is a risk measure (0 safe, 1 risky), then (1 - safetyScore) gives the safety factor.
-    const normSafety = 1 - metrics.safetyScore;
-  
+    const normEngagement = Math.min(metrics.engagementRatio / normalization.maxEngagementRatio, 1);
     // Compute a weighted sum of all normalized metrics.
-    const rawScore =
+    let rawScore =
       weights.subscribers * normSubscribers +
-      weights.totalViews * normTotalViews +
-      weights.engagement * normEngagement +
-      weights.safety * normSafety;
+      weights.totalViews * normViewsPerVideo +
+      weights.engagement * normEngagement;
   
     // Calculate the sum of weights.
-    const totalWeight = weights.subscribers + weights.totalViews + weights.engagement + weights.safety;
+    const totalWeight = weights.subscribers + weights.totalViews + weights.engagement;
     // Determine the average normalized score (should be between 0 and 1)
-    const averageScore = rawScore / totalWeight;
+    rawScore = rawScore * modifier;
+    const averageScore = Math.min(rawScore / totalWeight, 1);
   
     // Scale the average score to a 0–10 range.
-    return averageScore * 10;
+    return 10 - averageScore * 10;
   }
   
   // ----- Example Usage ----- //
@@ -102,26 +96,69 @@ interface ChannelMetrics {
   // Example channel metrics.
   const channelMetrics: ChannelMetrics = {
     subscribers: 50000,
-    totalViews: 2000000,
+    viewsPerVideo: 20000,
     engagementRatio: 0.05, // 5% engagement
-    safetyScore: 0.2, // 20% risk; hence, safety factor is 0.8
   };
+  const fireship: ChannelMetrics = {
+    subscribers: 3690000,
+    viewsPerVideo: 779128.7363253857,
+    engagementRatio: 0.04169125483168387
+  }
+  const MrBeast: ChannelMetrics = {
+    subscribers: 365000000,
+    viewsPerVideo: 86690620.97287735,
+    engagementRatio: 0.040912982954989775
+  }
+  const PancreasNoWork: ChannelMetrics = {
+    subscribers: 276000,
+    viewsPerVideo: 261289.1774891775,
+    engagementRatio: 0.06515226757020831
+  }
+  const BackendBanter: ChannelMetrics = {
+    subscribers: 20800,
+    viewsPerVideo: 6013.044554455446,
+    engagementRatio: 0.024864376130198915
+  }
+  const BadChannel: ChannelMetrics = {
+    subscribers: 3800,
+    viewsPerVideo: 313.044554455446,
+    engagementRatio: 0.004864376130198915
+  }
   
   // Example normalization factors based on your dataset.
   const normalizationFactors: NormalizationFactors = {
-    maxSubscribers: 1000000,   // 1,000,000 is considered high
-    maxTotalViews: 50000000,   // 50,000,000 is considered high
-    maxEngagementRatio: 0.1,   // 10% engagement is considered high
+    maxSubscribers: 1200000,   // 1,200,000 is considered high
+    maxViewsPerVideo: 800000,   // 800,000 is considered high
+    maxEngagementRatio: 0.07,   // 7% engagement is considered high
   };
   
   // Weights assigned to each metric (must sum to a meaningful total, e.g., 1 or any constant)
   const weights: Weights = {
-    subscribers: 0.35,
-    totalViews: 0.35,
-    engagement: 0.1,
-    safety: 0.2,
+    subscribers: 0.4,
+    totalViews: 0.4,
+    engagement: 0.2,
   };
   
   const score = getCreditScore(channelMetrics, normalizationFactors, weights);
   console.log(`Credit Eligibility Score: ${score.toFixed(2)} / 10`);
+
+  console.log("Fireship:");
+  const score2 = getCreditScore(fireship, normalizationFactors, weights);
+  console.log(`Credit Eligibility Score: ${score2.toFixed(2)} / 10`);
+
+  console.log("MrBeast:");
+  const score3 = getCreditScore(MrBeast, normalizationFactors, weights);
+  console.log(`Credit Eligibility Score: ${score3.toFixed(2)} / 10`);
+
+  console.log("PancreasNoWork:");
+  const score4 = getCreditScore(PancreasNoWork, normalizationFactors, weights);
+  console.log(`Credit Eligibility Score: ${score4.toFixed(2)} / 10`);
+
+  console.log("BackendBanter:");
+  const score5 = getCreditScore(BackendBanter, normalizationFactors, weights);
+  console.log(`Credit Eligibility Score: ${score5.toFixed(2)} / 10`);
+
+  console.log("BadChannel:");
+  const score6 = getCreditScore(BadChannel, normalizationFactors, weights);
+  console.log(`Credit Eligibility Score: ${score6.toFixed(2)} / 10`);
   
