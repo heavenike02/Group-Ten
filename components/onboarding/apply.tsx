@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-
+import { Textarea } from "../ui/textarea";
 import { useState } from "react";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,9 @@ const CreateCardSchema = z.object({
   youtubeUrl: z.string().url("Invalid YouTube URL").optional(),
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
+  purpose: z
+    .string()
+    .min(10, "Please provide a detailed purpose (min 10 characters)"),
   phone: z
     .string()
     .regex(/^\+353[1-9][0-9]{6,9}$/, "Phone number must be in Irish format"),
@@ -37,6 +40,7 @@ const CreateCardSchema = z.object({
     line2: z.string().optional(),
     city: z.string().min(1, "City is required"),
     state: z.string().min(1, "State is required"),
+
     postal_code: z.string().min(1, "Postal code is required"),
     country: z.string().length(2, "Country must be a 2-letter code"),
   }),
@@ -53,12 +57,14 @@ export function ApplyForm() {
     name: "",
     email: "",
     phone: "",
+    purpose: "",
     address: {
       line1: "",
       line2: "",
       city: "",
       state: "",
       postal_code: "",
+
       country: "IE",
     },
     currency: "eur",
@@ -116,7 +122,20 @@ export function ApplyForm() {
       const response = await fetch("/api/cards/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          channel: formData.youtubeUrl,
+          banking_data: {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            address: formData.address,
+            currency: formData.currency,
+            amount: formData.amount,
+            purpose: formData.purpose,
+          },
+          loan_amount: formData.amount,
+          loan_purpose: formData.purpose,
+        }),
       });
 
       const data = await response.json();
@@ -187,6 +206,7 @@ export function ApplyForm() {
                     required
                   />
                 </div>
+
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
@@ -291,6 +311,19 @@ export function ApplyForm() {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="purpose">Purpose</Label>
+              <Textarea
+                id="purpose"
+                name="purpose"
+                value={formData.purpose}
+                onChange={handleChange}
+                placeholder="Please describe the purpose of your credit application..."
+                className="w-full min-h-[100px] px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+
             {/* Credit Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Credit Information</h3>
@@ -346,7 +379,11 @@ export function ApplyForm() {
             )}
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading || !isBankConnected}
+            >
               {loading ? "Processing..." : "Submit Application"}
             </Button>
           </form>

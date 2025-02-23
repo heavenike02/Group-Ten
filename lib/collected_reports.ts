@@ -2,7 +2,7 @@ import { evaluateCreditRisk, BankingData } from "../lib/creditScoring";
 import { final_score_brand } from "../service/youTube/final_score";
 import { proposal_analyser } from "../service/business_plan/proposal_analyser";
 import { fetchChannelContentDetails } from "../service/youTube/analytics";
-import "dotenv/config";
+
 
 
 export const create_analysisReport = async (

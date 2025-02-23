@@ -1,6 +1,6 @@
 import { create_analysisReport } from "./collected_reports";
 import OpenAI from "openai";
-import "dotenv/config";
+
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 if (!OPENAI_API_KEY) {
@@ -47,13 +47,28 @@ Where:
 
 Use rigorous analysis as a professional financial risk and brand safety team.`;
 
+const extractChannelName = (url: string): string => {
+  try {
+    // Extract the part after @ symbol
+    const match = url.match(/@([^/\s]+)/);
+    if (!match) {
+      throw new Error("Invalid YouTube channel URL format");
+    }
+    return match[1];
+  } catch (error) {
+    throw new Error("Failed to parse YouTube channel URL");
+  }
+};
+
 export const create_final_decision = async (
-  channel: string,
+  channelUrl: string,
   banking_data: any,
   loan_asked: number
 ) => {
   try {
+    const channel = extractChannelName(channelUrl);
     const summary_report = await create_analysisReport(channel, banking_data, loan_asked);
+    console.log("Here");
 
     const formatted_summary_report = JSON.stringify(summary_report);
     console.log("formatted_summary_report: ", formatted_summary_report);
