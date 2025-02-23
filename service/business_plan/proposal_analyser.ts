@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import fs from "fs-extra";
-import "dotenv/config";
+
 import path from "path";
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;

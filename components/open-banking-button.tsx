@@ -2,18 +2,20 @@
 import { loadStripe } from "@stripe/stripe-js";
 import { useState } from "react";
 
+
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 );
 
-export function TestBankConnect() {
+export function TestBankConnect({ onConnected }: { onConnected: () => void }) {
   const [loading, setLoading] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
 
   const handleConnect = async () => {
     setLoading(true);
     try {
       // Get client secret from your API
-      const response = await fetch("/api/cards/connect-bank", {
+      const response = await fetch("/api/connect-bank", {
         method: "POST",
       });
       const { clientSecret } = await response.json();
@@ -32,6 +34,8 @@ export function TestBankConnect() {
         console.error("Connection error:", error);
       } else {
         console.log("Bank connected successfully!");
+        setIsConnected(true);
+        onConnected(); // Call the onConnected callback
       }
     } catch (error) {
       console.error("Error:", error);
@@ -43,10 +47,10 @@ export function TestBankConnect() {
   return (
     <button
       onClick={handleConnect}
-      disabled={loading}
-      className="px-4 py-2 bg-blue-500 text-white rounded"
+      disabled={loading || isConnected}
+      className="px-4 py-2 w-full bg-blue-500 text-white rounded"
     >
-      {loading ? "Connecting..." : "Test Bank Connect"}
+      {loading ? "Connecting..." : isConnected ? "Connected "  : "Connect Bank Account"}
     </button>
   );
 }
