@@ -1,3 +1,3 @@
-import { final_score } from "./final_score";
+import { final_score_brand } from "./final_score";
 
-final_score("kurzgesagt").then(console.log);
+final_score_brand("neetcode");

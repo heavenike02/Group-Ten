@@ -43,7 +43,7 @@ Example Output:
 4
 `;
 
-export const final_score = async (channel: string) => {
+export const final_score_brand = async (channel: string) => {
   try {
     const analysis = await process_channel(channel);
 
@@ -74,7 +74,7 @@ export const final_score = async (channel: string) => {
       score = Math.min(score, 10);
     }
 
-    return score;
+    return [score, analysis];
   } catch (error : any) {
     console.error("Error processing final score:", error.message);
     return null;

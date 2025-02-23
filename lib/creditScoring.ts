@@ -34,8 +34,6 @@ export interface BankingData {
 // Define an interface for the evaluation result
 export interface CreditEvaluationResult {
   creditScore: number;
-  loanApproved: boolean;
-  maxLoanAmount: number;
   metrics: {
     totalIncome: number;
     totalExpenditure: number;
@@ -57,19 +55,21 @@ function normalize(value: number, min: number, max: number): number {
 /**
  * Evaluates a customer's credit risk based on transaction data.
  * @param data - The banking data in the BUDGET_INSIGHT_V2_0 format.
- * @returns A CreditEvaluationResult object with computed metrics and a loan recommendation.
+ * @returns A CreditEvaluationResult object with computed metrics.
  */
 export function evaluateCreditRisk(data: BankingData): CreditEvaluationResult {
-  // Assume we're working with the first connection and account
+  if (!data.connections || data.connections.length === 0 || !data.connections[0].accounts || data.connections[0].accounts.length === 0) {
+    throw new Error("Invalid banking data: No account information available.");
+  }
+
+  // Assume we're working with the first connection and first account
   const account = data.connections[0].accounts[0];
-  const transactions = account.transactions;
+  const transactions = account.transactions || [];
   const currentBalance = account.balance;
 
   // Define evaluation period: last 90 days
   const evaluationPeriodDays = 90;
-  const evaluationPeriodStart = new Date(
-    Date.now() - evaluationPeriodDays * 24 * 60 * 60 * 1000
-  );
+  const evaluationPeriodStart = new Date(Date.now() - evaluationPeriodDays * 24 * 60 * 60 * 1000);
 
   let totalIncome = 0;
   let totalExpenditure = 0;
@@ -86,13 +86,11 @@ export function evaluateCreditRisk(data: BankingData): CreditEvaluationResult {
 
     if (value > 0) {
       totalIncome += value;
-      // Identify salary deposits (customize keyword check as needed)
       if (description.includes("SALARY")) {
         salaryTransactions.push(value);
       }
     } else {
       totalExpenditure += Math.abs(value);
-      // Count overdraft or fee-like events based on keywords
       if (description.includes("OVERDRAFT") || description.includes("FEE")) {
         overdraftCount++;
       }
@@ -102,43 +100,23 @@ export function evaluateCreditRisk(data: BankingData): CreditEvaluationResult {
   // Compute core metrics
   const netIncome = totalIncome - totalExpenditure;
   const expenditureRatio = totalIncome > 0 ? totalExpenditure / totalIncome : 1;
-  const averageSalary =
-    salaryTransactions.length > 0
-      ? salaryTransactions.reduce((sum, s) => sum + s, 0) /
-        salaryTransactions.length
-      : 0;
+  const averageSalary = salaryTransactions.length > 0
+    ? salaryTransactions.reduce((sum, s) => sum + s, 0) / salaryTransactions.length
+    : 0;
 
-  // Calculate salary frequency (number of salary deposits per month)
-  const months = evaluationPeriodDays / 30; // approx. 3 months for 90 days
+  // Salary frequency calculation (number of salary deposits per month)
+  const months = evaluationPeriodDays / 30;
   const salaryFrequency = salaryTransactions.length / months;
 
   // --- Normalization --- //
-  // These min/max values can be calibrated using historical data.
-  const minNetIncome = -5000;
-  const maxNetIncome = 5000;
-  const normalizedNetIncome = normalize(netIncome, minNetIncome, maxNetIncome);
-
-  // Assume a typical salary frequency between 0 and 2 per month.
-  const minFrequency = 0;
-  const maxFrequency = 2;
-  const normalizedSalaryFrequency = normalize(
-    salaryFrequency,
-    minFrequency,
-    maxFrequency
-  );
-
-  // Current balance is considered good if non-negative.
+  const normalizedNetIncome = normalize(netIncome, -5000, 5000);
+  const normalizedSalaryFrequency = normalize(salaryFrequency, 0, 2);
   const normalizedBalance = currentBalance >= 0 ? 1 : 0;
-
-  // Overdraft penalty: if overdraftCount is high, lower the score.
-  const maxExpectedOverdrafts = 3;
-  const normalizedOverdraftPenalty =
-    1 - Math.min(overdraftCount / maxExpectedOverdrafts, 1);
+  const normalizedOverdraftPenalty = 1 - Math.min(overdraftCount / 3, 1);
 
   // --- Composite Credit Score --- //
-  // Define weights for each feature. Adjust as needed.
   const weight_netIncome = 0.4;
-  const weight_salaryStability = 0.3; // using salary frequency as a proxy for stability
+  const weight_salaryStability = 0.3;
   const weight_balance = 0.2;
   const weight_overdraft = 0.1;
 
@@ -148,19 +126,11 @@ export function evaluateCreditRisk(data: BankingData): CreditEvaluationResult {
     weight_balance * normalizedBalance +
     weight_overdraft * normalizedOverdraftPenalty;
 
-  // Define a threshold for loan approval (example: 0.6)
-  const creditThreshold = 0.6;
-  const loanApproved = compositeScore >= creditThreshold;
-
-  // Estimate a maximum loan amount: e.g., 3 times the average monthly net income (if positive)
-  const monthlyNetIncome = netIncome / months;
-  const maxLoanAmount =
-    loanApproved && monthlyNetIncome > 0 ? 3 * monthlyNetIncome : 0;
+  // --- Credit Score Transformation (0-10 scale) --- //
+  const creditScore = Math.round((1 - compositeScore) * 10);
 
   return {
-    creditScore: compositeScore,
-    loanApproved,
-    maxLoanAmount,
+    creditScore,
     metrics: {
       totalIncome,
       totalExpenditure,
@@ -173,6 +143,7 @@ export function evaluateCreditRisk(data: BankingData): CreditEvaluationResult {
     },
   };
 }
+
 
 export const banking_data = {
   format: "BUDGET_INSIGHT_V2_0",

@@ -17,6 +17,7 @@ export const process_channel = async (channel: string) : Promise<string | null> 
     console.error("Error downloading audio.");
   }
 
+
   try {
     const files = await fs.readdir(DIRECTORY);
     const wavFiles = files.filter((file) => file.endsWith(".wav"));
@@ -58,7 +59,7 @@ export const process_channel = async (channel: string) : Promise<string | null> 
   }
 
   console.log("Analysis complete.");
-  console.log(full_output);
+  // console.log(full_output);
 
   try {
     await fs.remove(DIRECTORY);

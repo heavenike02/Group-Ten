@@ -27,7 +27,7 @@ export function download_audio(
 
   console.log(`📥 Downloading audio from: ${channelUrl}`);
   console.log(`📂 Saving to: ${downloads_folder}`);
-  const command = `yt-dlp --extract-audio --audio-format wav -f bestaudio --playlist-items 1-5 -N 8 --match-filter "duration < 600" -o "${outputPath}" "${channelUrl}"`;
+  const command = `yt-dlp --extract-audio --audio-format wav -f bestaudio --playlist-items 1-2 -N 8 --match-filter "duration < 600" -o "${outputPath}" "${channelUrl}"`;
 
   try {
     execSync(command, { stdio: "inherit" });
