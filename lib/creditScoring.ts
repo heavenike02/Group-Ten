@@ -58,9 +58,14 @@ function normalize(value: number, min: number, max: number): number {
  * @returns A CreditEvaluationResult object with computed metrics.
  */
 export function evaluateCreditRisk(data: BankingData): CreditEvaluationResult {
-  if (!data.connections || data.connections.length === 0 || !data.connections[0].accounts || data.connections[0].accounts.length === 0) {
+  /*if (
+    !data.connections ||
+    data.connections.length === 0 ||
+    !data.connections[0].accounts ||
+    data.connections[0].accounts.length === 0
+  ) {
     throw new Error("Invalid banking data: No account information available.");
-  }
+  }*/
 
   // Assume we're working with the first connection and first account
   const account = data.connections[0].accounts[0];
@@ -69,7 +74,9 @@ export function evaluateCreditRisk(data: BankingData): CreditEvaluationResult {
 
   // Define evaluation period: last 90 days
   const evaluationPeriodDays = 90;
-  const evaluationPeriodStart = new Date(Date.now() - evaluationPeriodDays * 24 * 60 * 60 * 1000);
+  const evaluationPeriodStart = new Date(
+    Date.now() - evaluationPeriodDays * 24 * 60 * 60 * 1000
+  );
 
   let totalIncome = 0;
   let totalExpenditure = 0;
@@ -100,9 +107,11 @@ export function evaluateCreditRisk(data: BankingData): CreditEvaluationResult {
   // Compute core metrics
   const netIncome = totalIncome - totalExpenditure;
   const expenditureRatio = totalIncome > 0 ? totalExpenditure / totalIncome : 1;
-  const averageSalary = salaryTransactions.length > 0
-    ? salaryTransactions.reduce((sum, s) => sum + s, 0) / salaryTransactions.length
-    : 0;
+  const averageSalary =
+    salaryTransactions.length > 0
+      ? salaryTransactions.reduce((sum, s) => sum + s, 0) /
+        salaryTransactions.length
+      : 0;
 
   // Salary frequency calculation (number of salary deposits per month)
   const months = evaluationPeriodDays / 30;
@@ -143,7 +152,6 @@ export function evaluateCreditRisk(data: BankingData): CreditEvaluationResult {
     },
   };
 }
-
 
 export const banking_data = {
   format: "BUDGET_INSIGHT_V2_0",

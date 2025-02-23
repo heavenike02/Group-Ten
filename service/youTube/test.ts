@@ -1,3 +1,4 @@
 import { final_score_brand } from "./final_score";
 
-final_score_brand("neetcode");
+final_score_brand("neetcode").then(console.log);
+final_score_brand("stevencrowder").then(console.log);

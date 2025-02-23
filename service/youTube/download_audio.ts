@@ -12,6 +12,8 @@ export function download_audio(
     return false;
   }
 
+  console.log("Checking if downloads folder exists..." + downloads_folder);
+
   if (!fs.existsSync(downloads_folder)) {
     fs.mkdirSync(downloads_folder, { recursive: true });
   }
