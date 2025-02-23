@@ -1,104 +1,97 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# Cloutchasers
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+Cloutchasers is a cutting-edge fintech platform that leverages the power of social media and AI to unlock credit opportunities for influencers.<br><br> By combining nontraditional data (such as social metrics, influencer proposals, and bank statements) with advanced underwriting techniques, Cloutchasers aims to empower digital creators by offering them tailored loan products and financial services.
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Architecture](#architecture)
+- [How It Works](#how-it-works)
+- [Usage](#usage)
+- [Challenges and Future Work](#challenges-and-future-work)
+
+
+## Overview
+
+Influencers often struggle to access credit due to their lack of traditional credit history. Cloutchasers changes that by:
+- **Integrating Social Data:** Consolidating metrics from various social platforms.
+- **AI-Powered Underwriting:** Leveraging OpenAI to validate loan applications by analyzing influencer profiles, bank statements, and proposals.
+- **Secure Transactions:** Utilizing Stripe to handle all transactions and backend operations securely.
+
+The project is built as a startup venture with a focus on simplicity, scalability, and transparency.
 
 ## Features
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Middleware
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+- **Alternative Credit Assessment:**
+  Utilizes nontraditional data to determine creditworthiness.
 
-## Demo
+- **OpenAI Integration:**
+  Leverages state-of-the-art natural language processing to validate and analyze influencer data.
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+- **YouTube API Integration:** Uses the YouTube Data API to gather comprehensive influencer data.
 
-## Deploy to Vercel
+- **Stripe Integration:**
+  Facilitates secure, end-to-end payment processing and transaction management.
 
-Vercel deployment will guide you through creating a Supabase account and project.
+- **TypeScript-Powered Codebase:**
+  Provides a robust, maintainable, and scalable code foundation.
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+## Technology Stack
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+- **Language:** TypeScript
+- **AI:** OpenAI API for application validation and risk assessment.
+- **Data API:** YouTube API for collecting influencer data.
+- **Database:** Supabase for storing user data and loan information.
+- **Payments & Transactions:** Stripe API for managing backend financial operations.
+- **Version Control:** Git & GitHub for collaboration and code management.
+- **Deployment:** (Include deployment details if applicable, e.g., Docker, AWS, etc.)
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+## Architecture
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+Cloutchasers' architecture is modular, separating concerns between data ingestion, AI-based underwriting, and transaction management. The main modules include:
+- **Data Aggregation Module:** Collects and normalizes data from social media platforms and financial records.
+- **Underwriting Engine:** Implements the credit scoring model using a combination of traditional metrics and influencer-specific KPIs.
+- **Transaction Manager:** Integrates with Stripe to manage disbursements and repayments.
 
-## Clone and run locally
+## How It Works
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+1. **Data Collection:**
+   - Social metrics (followers, engagement, etc.) are aggregated.
+   - Financial data such as bank statements and loan proposals are ingested.
 
-2. Create a Next.js app using the Supabase Starter template npx command
+2. **Application Validation:**
+   - The OpenAI API analyzes textual and numerical data of videos to generate a brand safety score.
+   - The algorithm analyzes data from YouTube Data API to determine the content creator score.
 
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
+3. **Loan Decision & Disbursement:**
+   - Based on the computed score, the system determines the loan amount and terms.
+   - Once approved, funds are securely disbursed using Stripe's payment infrastructure.
 
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
 
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
+## Usage
 
-3. Use `cd` to change into the app's directory
+1. **User Onboarding**
+    - User submits channel link
+    - API fetches engagement metrics
+    - Engine assesses whether the user is eligible for a credit
+2. **Credit Limit Assessment**
+    - The credit decision engine calculates the credit limit
+    - If a user requests a loan beyond their eligible limit, the engine suggests a lower credit amount.
+    - Once a user accepts a credit, Stripe Issuing generates a virtual or a physical card
+## Challenges and Future Work
 
-   ```bash
-   cd with-supabase-app
-   ```
+**Current Challenges:**
+- Ensuring data consistency across various social media platforms.
+- Balancing between traditional credit metrics and alternative influencer data.
+- Managing privacy and compliance issues when using nontraditional data sources.
 
-4. Rename `.env.example` to `.env.local` and update the following:
+**Future Enhancements:**
+- Implementation of the Stripe Cards with Credit Options once the feature exits beta.
+- Introduction of YouTube Validation and Authorization for content creators requesting credit.
+- Integration of additional data sources for a more comprehensive risk assessment.
+- Enhancement the AI models with machine learning to improve prediction accuracy.
+- Real-time tracking of user activity for risk assessment adjustment and enablement of potential credit limit increase.
+- Brand partnership opportunities based on their YouTube data and financial spending.
 
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=[INSERT SUPABASE PROJECT API ANON KEY]
-   ```
-
-   Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` can be found in [your Supabase project's API settings](https://app.supabase.com/project/_/settings/api)
-
-5. You can now run the Next.js local development server:
-
-   ```bash
-   npm run dev
-   ```
-
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
-
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
-
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
-
-## Feedback and issues
-
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
-
-## More Supabase examples
-
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
