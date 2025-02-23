@@ -6,7 +6,7 @@ const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 );
 
-export function TestBankConnect() {
+export function TestBankConnect({ onConnected }) {
   const [loading, setLoading] = useState(false);
 
   const handleConnect = async () => {
@@ -32,6 +32,7 @@ export function TestBankConnect() {
         console.error("Connection error:", error);
       } else {
         console.log("Bank connected successfully!");
+        onConnected(); // Call the onConnected callback
       }
     } catch (error) {
       console.error("Error:", error);
@@ -44,9 +45,9 @@ export function TestBankConnect() {
     <button
       onClick={handleConnect}
       disabled={loading}
-      className="px-4 py-2 bg-blue-500 text-white rounded"
+      className="px-4 py-2 w-full bg-blue-500 text-white rounded"
     >
-      {loading ? "Connecting..." : "Test Bank Connect"}
+      {loading ? "Connecting..." : "Connect Bank Account"}
     </button>
   );
 }

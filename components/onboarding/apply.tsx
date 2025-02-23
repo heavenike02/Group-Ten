@@ -23,8 +23,8 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle2, AlertCircle } from "lucide-react";
+import { TestBankConnect } from "../open-banking-button";
 
-// Schema remains the same
 const CreateCardSchema = z.object({
   youtubeUrl: z.string().url("Invalid YouTube URL").optional(),
   name: z.string().min(1, "Name is required"),
@@ -48,7 +48,6 @@ const CreateCardSchema = z.object({
 });
 
 export function ApplyForm() {
-  // State remains the same
   const [formData, setFormData] = useState({
     youtubeUrl: "",
     name: "",
@@ -70,8 +69,8 @@ export function ApplyForm() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [cardData, setCardData] = useState(null);
+  const [isBankConnected, setIsBankConnected] = useState(false);
 
-  // Handlers remain the same
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -80,6 +79,9 @@ export function ApplyForm() {
       ...prev,
       [name]: value,
     }));
+  };
+  const handleBankConnected = () => {
+    setIsBankConnected(true);
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -325,6 +327,7 @@ export function ApplyForm() {
               </div>
             </div>
 
+            <TestBankConnect onConnected={handleBankConnected} />
             {/* Messages */}
             {message && (
               <Alert className="bg-green-50 text-green-900 border-green-200">
