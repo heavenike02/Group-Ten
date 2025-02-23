@@ -1,6 +1,3 @@
-// creditScoring.ts
-
-// Define interfaces for the input data
 export interface Transaction {
   date: string;
   rdate: string;
@@ -61,6 +58,8 @@ function normalize(value: number, min: number, max: number): number {
  */
 export function evaluateCreditRisk(data: BankingData): CreditEvaluationResult {
   // Assume we're working with the first connection and account
+
+  console.log(data);
   const account = data.connections[0].accounts[0];
   const transactions = account.transactions;
   const currentBalance = account.balance;

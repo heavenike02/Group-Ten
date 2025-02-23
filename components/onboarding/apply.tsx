@@ -31,7 +31,7 @@ const CreateCardSchema = z.object({
   email: z.string().email("Invalid email address"),
   phone: z
     .string()
-    .regex(/^\+[1-9]\d{1,14}$/, "Phone number must be in E.164 format"),
+    .regex(/^\+353[1-9][0-9]{6,9}$/, "Phone number must be in Irish format"),
   address: z.object({
     line1: z.string().min(1, "Address line 1 is required"),
     line2: z.string().optional(),
@@ -59,9 +59,9 @@ export function ApplyForm() {
       city: "",
       state: "",
       postal_code: "",
-      country: "",
+      country: "IE",
     },
-    currency: "usd",
+    currency: "eur",
     amount: 0,
   });
 
@@ -277,11 +277,12 @@ export function ApplyForm() {
                   <div className="space-y-2">
                     <Label htmlFor="country">Country Code</Label>
                     <Input
+                      disabled={true}
                       id="country"
                       name="country"
                       value={formData.address.country}
                       onChange={handleAddressChange}
-                      placeholder="US"
+                      placeholder="IE"
                       maxLength={2}
                       required
                     />
@@ -303,12 +304,13 @@ export function ApplyForm() {
                       setFormData((prev) => ({ ...prev, currency: value }))
                     }
                   >
-                    <SelectTrigger>
+                    {/* stripe only supports eur for now */}
+                    <SelectTrigger disabled={true}>
                       <SelectValue placeholder="Select currency" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="usd">USD</SelectItem>
                       <SelectItem value="eur">EUR</SelectItem>
+                      <SelectItem value="usd">USD</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -363,8 +365,9 @@ export function ApplyForm() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Balance:</span>
+                    <span className="font-medium">Email:</span>
                     <span className="font-medium">
-                      ${(cardData?.balance / 100).toFixed(2)}
+                      {/* {cardData?.user_metadata.email} */}
                     </span>
                   </div>
                 </div>

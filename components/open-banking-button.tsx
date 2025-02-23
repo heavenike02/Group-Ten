@@ -6,7 +6,7 @@ const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 );
 
-export function TestBankConnect({ onConnected }) {
+export function TestBankConnect({ onConnected }: { onConnected: () => void }) {
   const [loading, setLoading] = useState(false);
 
   const handleConnect = async () => {
