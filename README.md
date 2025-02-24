@@ -1,4 +1,4 @@
-# Cloutchasers
+# Cloutchasers https://hack-ireland-2025.devpost.com
 
 Cloutchasers is a cutting-edge fintech platform that leverages the power of social media and AI to unlock credit opportunities for influencers.<br><br> By combining nontraditional data (such as social metrics, influencer proposals, and bank statements) with advanced underwriting techniques, Cloutchasers aims to empower digital creators by offering them tailored loan products and financial services.
 
